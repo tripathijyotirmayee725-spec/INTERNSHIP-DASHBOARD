@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Internship Reports Dashboard</title>
+<style>
+:root{
+  --bg:#f8f9fb;--bg2:#fff;--bg3:#f1f3f6;
+  --bg-info:#eff6ff;--bg-success:#f0fdf4;--bg-danger:#fef2f2;--bg-warning:#fffbeb;--bg-orange:#fff7ed;--bg-purple:#faf5ff;
+  --text:#1a1d23;--text2:#6b7280;--text3:#9ca3af;
+  --info:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#d97706;--purple:#7c3aed;
+  --border:#e5e7eb;--border2:#d1d5db;--radius:8px;--radius-lg:12px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+a{color:var(--info);text-decoration:none}
+.wrapper{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px}
+.brand h1{font-size:19px;font-weight:700}.brand p{font-size:12px;color:var(--text2);margin-top:3px}
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:1.5rem;overflow-x:auto}
+.tab{padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text2);transition:all .15s;white-space:nowrap;user-select:none}
+.tab:hover{color:var(--text)}.tab.active{color:var(--info);border-bottom-color:var(--info)}
+.tab-body{display:none}.tab-body.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:1.5rem}
+@media(max-width:750px){.stats{grid-template-columns:repeat(3,1fr)}}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;text-align:center;transition:box-shadow .2s}
+.stat:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.stat-val{font-size:24px;font-weight:700;margin-bottom:4px}.stat-lbl{font-size:11px;color:var(--text2);font-weight:500}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.2rem}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);background:var(--bg3);flex-wrap:wrap;gap:8px}
+.panel-hd h2{font-size:13px;font-weight:600}.panel-body{padding:18px}
+.btn{display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text);transition:all .15s;font-family:var(--font);white-space:nowrap}
+.btn:hover{background:var(--bg3)}.btn.primary{background:var(--info);color:#fff;border-color:var(--info)}.btn.primary:hover{background:#1d4ed8}
+.btn.gem{background:var(--purple);color:#fff;border-color:var(--purple)}.btn.gem:hover{background:#6d28d9}
+.btn.success-btn{background:var(--success);color:#fff;border-color:var(--success)}.btn.success-btn:hover{background:#15803d}
+.btn.sm{padding:4px 10px;font-size:12px}.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-green{background:var(--bg-success);color:var(--success)}.b-red{background:var(--bg-danger);color:var(--danger)}
+.b-amber{background:var(--bg-warning);color:var(--warning)}.b-blue{background:var(--bg-info);color:var(--info)}
+.b-gray{background:var(--bg3);color:var(--text2)}.b-orange{background:var(--bg-orange);color:#c2410c}
+.b-purple{background:var(--bg-purple);color:var(--purple)}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:600;color:var(--text2);text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;font-size:13px}
+tr:last-child td{border-bottom:none}tbody tr:hover td{background:#fafbfc}
+.file-link{display:inline-flex;align-items:center;gap:4px;color:var(--info);font-size:12px;padding:3px 8px;border:1px solid #bfdbfe;border-radius:6px;background:var(--bg-info);text-decoration:none}
+.file-link:hover{background:#dbeafe}.missing{font-size:12px;color:var(--text3);font-style:italic}
+.score-ring{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:3px solid;flex-shrink:0}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}.fg label{font-size:12px;font-weight:600;color:var(--text2)}
+input[type=text],input[type=url],input[type=time],input[type=date],input[type=password],textarea,select{width:100%;padding:8px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-size:13px;font-family:var(--font)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--info);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+textarea{resize:vertical;line-height:1.5}
+.roster-table{width:100%;border-collapse:collapse}
+.roster-table th{font-size:11px;font-weight:600;color:var(--text2);padding:7px 9px;border-bottom:1px solid var(--border);background:var(--bg3);text-align:left}
+.roster-table td{padding:5px 8px;border-bottom:1px solid var(--border)}
+.roster-table tr:last-child td{border-bottom:none}
+.roster-table input{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font)}
+.roster-table input:focus{outline:none;border-color:var(--info)}
+.info-box{background:var(--bg-info);border:1px solid #bfdbfe;border-radius:var(--radius);padding:12px 16px;font-size:12px;color:#1e40af;line-height:1.7;margin-bottom:14px}
+.gem-box{background:var(--bg-purple);border:1px solid #ddd6fe;border-radius:var(--radius);padding:12px 16px;font-size:12px;color:#5b21b6;line-height:1.7;margin-bottom:14px}
+.success-box{background:var(--bg-success);border:1px solid #86efac;border-radius:var(--radius);padding:12px 16px;font-size:12px;color:#166534;line-height:1.7;margin-bottom:14px}
+.late-pill{display:inline-flex;align-items:center;gap:4px;background:var(--bg-danger);color:var(--danger);border:1px solid #fca5a5;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap}
+.early-pill{display:inline-flex;align-items:center;gap:4px;background:var(--bg-success);color:var(--success);border:1px solid #86efac;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;white-space:nowrap}
+.deadline-due{font-size:10px;color:var(--text3);margin-top:3px}
+.sep{height:1px;background:var(--border);margin:16px 0}
+.note{font-size:11px;color:var(--text2);margin-top:6px;line-height:1.6}
+.empty{padding:3rem;text-align:center;color:var(--text2);font-size:13px}
+.mini-bar{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.mini-bar .lbl{font-size:10px;color:var(--text2);width:80px;flex-shrink:0}
+.mini-bar .track{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.mini-bar .fill{height:100%;border-radius:3px}
+.mini-bar .val{font-size:10px;font-weight:700;width:24px;text-align:right}
+.dots{display:inline-flex;gap:3px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--purple);animation:pulse 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.2}50%{opacity:1}}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border-radius:var(--radius-lg);padding:1.5rem;max-width:600px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.modal-close{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);line-height:1}
+.sbar{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.sbar .slbl{font-size:12px;color:var(--text2);width:175px;flex-shrink:0}
+.sbar .strack{flex:1;height:9px;background:var(--bg3);border-radius:5px;overflow:hidden}
+.sbar .sfill{height:100%;border-radius:5px}.sbar .snum{font-size:12px;font-weight:700;width:40px;text-align:right}
+.late-alert{background:var(--bg-danger);border:1px solid #fca5a5;border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;color:#991b1b;display:flex;align-items:center;gap:8px}
+.ontime-alert{background:var(--bg-success);border:1px solid #86efac;border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;color:#166534;display:flex;align-items:center;gap:8px}
+/* Key config banner */
+.key-banner{background:linear-gradient(135deg,var(--bg-purple),#f0fdf4);border:1px solid #c4b5fd;border-radius:var(--radius-lg);padding:1rem 1.2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.key-banner label{font-size:12px;font-weight:700;color:var(--purple);white-space:nowrap}
+.key-banner input{flex:1;min-width:200px;padding:7px 12px;border:1px solid #c4b5fd;border-radius:var(--radius);font-size:13px;font-family:monospace;background:#fff;color:var(--text)}
+.key-banner .note{font-size:11px;color:var(--text2);width:100%}
+/* Extracted tag */
+.xtag{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:500}
+.xtag.sector{background:#faf5ff;color:#7c3aed;border:1px solid #ddd6fe}
+.xtag.company{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+.xtag.project{background:#f0fdf4;color:#16a34a;border:1px solid #86efac}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--text2);margin:2px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="topbar">
+    <div class="brand">
+      <h1>📋 Internship Reports Dashboard</h1>
+      <p>Gemini AI evaluation · Per-student 7-day deadlines · Presentation extraction</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="refresh-btn" onclick="refreshAll()" title="Reload both sheets">🔄 Refresh</button>
+      <button class="btn gem" id="eval-all-btn" onclick="evalAll()" style="display:none">✨ Evaluate all with Gemini</button>
+    </div>
+  </div>
+
+  <!-- Gemini key banner -->
+  <div class="key-banner" style="display:none">
+    <label>✨ Gemini API Key</label>
+    <input type="password" id="gemini-key" placeholder="Paste your Gemini API key here…" oninput="saveKey()"/>
+    <span id="key-status" style="font-size:12px;font-weight:600;color:var(--success);display:none">✓ Key saved</span>
+    <span class="note">Required for AI evaluation and PPT extraction. Saved locally in your browser — never sent anywhere except Google's Gemini API.</span>
+  </div>
+
+  <!-- paste helper — shown only when auto-load is blocked -->
+  <div id="paste-helper-msg" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#9a3412;line-height:1.8"></div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('submissions',this)">📋 Submissions</div>
+    <div class="tab"        onclick="switchTab('presentations',this)">🎯 Presentations</div>
+    <div class="tab"        onclick="switchTab('roster',this)">👥 Roster</div>
+    <div class="tab"        onclick="switchTab('connect',this)">🔗 Connect Sheets</div>
+    <div class="tab"        onclick="switchTab('guide',this)">📖 Guide</div>
+  </div>
+
+  <!-- ───────── SUBMISSIONS ───────── -->
+  <div id="tab-submissions" class="tab-body active">
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="st-total">0</div><div class="stat-lbl">Total submissions</div></div>
+      <div class="stat"><div class="stat-val" id="st-timely" style="color:var(--success)">0</div><div class="stat-lbl">On time</div></div>
+      <div class="stat"><div class="stat-val" id="st-late"   style="color:var(--danger)">0</div><div class="stat-lbl">Late</div></div>
+      <div class="stat"><div class="stat-val" id="st-nodate" style="color:var(--warning)">0</div><div class="stat-lbl">No joining date</div></div>
+      <div class="stat"><div class="stat-val" id="st-avg"    style="color:var(--purple)">—</div><div class="stat-lbl">Avg AI score</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd">
+        <h2>Submissions — Weekly Internship Reports</h2>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span id="live-tag"   style="display:none" class="badge b-green">● Live</span>
+          <span id="loaded-tag" style="display:none" class="badge b-gray">CSV loaded</span>
+          <button class="btn sm primary" onclick="switchTab('connect',document.querySelectorAll('.tab')[3])">+ Load data</button>
+        </div>
+      </div>
+      <div id="table-wrap" style="overflow-x:auto">
+        <div class="empty">No data loaded. Go to <strong>Connect Sheets</strong> tab.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── PRESENTATIONS ───────── -->
+  <div id="tab-presentations" class="tab-body">
+    <div class="gem-box">
+      ✨ <strong>Gemini-powered extraction.</strong> Link your Presentations Google Sheet below. For each submission, Gemini reads available data and extracts <strong>Sector, Company,</strong> and <strong>Project</strong>. If the student shared a public Google Slides link, Gemini will attempt to read the presentation directly.
+    </div>
+    <div class="panel">
+      <div class="panel-hd">
+        <h2>Presentations</h2>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span id="ppt-live-tag"   style="display:none" class="badge b-green">● Live</span>
+          <span id="ppt-loaded-tag" style="display:none" class="badge b-gray">CSV loaded</span>
+          <button class="btn sm gem" id="extract-all-btn" onclick="extractAll()" style="display:none">✨ Extract all</button>
+        </div>
+      </div>
+
+      <!-- inline connect for PPT sheet -->
+      <div id="ppt-connect-wrap" class="panel-body">
+        <div class="fg"><label>Presentations sheet — Published CSV URL</label>
+          <input type="url" id="ppt-csv-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"/></div>
+        <button class="btn primary" onclick="loadPptUrl()">Connect Presentations sheet ↗</button>
+        <div class="sep"></div>
+        <div class="fg"><label>Or paste CSV content directly</label>
+          <textarea id="ppt-csv-paste" rows="5" placeholder="Paste presentations sheet CSV here…"></textarea></div>
+        <button class="btn" onclick="loadPptPaste()">Load pasted CSV</button>
+        <div class="sep"></div>
+        <div class="info-box">
+          <strong>Expected Google Form columns for this sheet:</strong><br>
+          Timestamp · Your name · Roll no · Company name · Project title · Your presentation (file upload or Google Slides link)
+        </div>
+      </div>
+
+      <div id="ppt-table-wrap" style="overflow-x:auto;display:none">
+        <div class="empty">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── ROSTER ───────── -->
+  <div id="tab-roster" class="tab-body">
+    <div class="panel">
+      <div class="panel-hd">
+        <h2>Student Roster — Joining Dates</h2>
+        <div style="display:flex;gap:6px">
+          <button class="btn sm"         onclick="addRosterRow()">+ Add student</button>
+          <button class="btn sm primary" onclick="recomputeAll()">💾 Save & recalculate</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="info-box">
+          <strong>Rolling 7-day deadlines:</strong> Week N deadline = Joining date + (N × 7 days) at the configured time.<br>
+          Example: Joins April 30 → Week 1 due May 7 · Week 2 due May 14 · Week 3 due May 21
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <label style="font-size:12px;font-weight:600;color:var(--text2)">Daily deadline time:</label>
+          <input type="time" id="dl-time" value="23:59" style="width:110px" onchange="recomputeAll()"/>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="roster-table">
+            <thead><tr><th>Student name</th><th>Roll No.</th><th>Joining date</th><th>Week 1 deadline</th><th>Week 2 deadline</th><th>Week 3 deadline</th><th></th></tr></thead>
+            <tbody id="roster-body"></tbody>
+          </table>
+        </div>
+        <p class="note" style="margin-top:10px">Fill joining dates and click <strong>Save & recalculate</strong>.</p>
+        <div class="sep"></div>
+        <div class="fg"><label>Bulk-add student names (one per line)</label>
+          <textarea id="bulk-names" rows="6" placeholder="Jainisha Chauhan&#10;Janvi Panwar&#10;..."></textarea></div>
+        <button class="btn sm" onclick="bulkAdd()">Add to roster</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── CONNECT SHEETS ───────── -->
+  <div id="tab-connect" class="tab-body">
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-hd"><h2>📋 Weekly Reports Sheet</h2></div>
+        <div class="panel-body">
+          <div class="info-box">Publish your Google Form response sheet: File → Share → Publish to web → CSV → copy URL.</div>
+          <div class="fg"><label>Published CSV URL</label>
+            <input type="url" id="csv-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQEW7ei-oB7Y3AAe2DQuGP79XI4erlRcYbfyYnAFZ-Fhkzur19yVx2V0ax-THiJH9OxtJd0BH2Dg_m/pub?output=csv"/></div>
+          <button class="btn primary" onclick="loadFromUrl()" style="width:100%">Connect & load ↗</button>
+          <div class="sep"></div>
+          <div class="fg"><label>Or paste CSV directly</label>
+            <textarea id="csv-paste" rows="5" placeholder="Paste CSV content here…"></textarea></div>
+          <button class="btn" onclick="loadFromPaste()" style="width:100%">Load pasted CSV</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><h2>🎯 Presentations Sheet</h2></div>
+        <div class="panel-body">
+          <div class="gem-box">A separate Google Form for presentation uploads. Gemini will extract sector, company, and project from each submission.</div>
+          <div class="fg"><label>Published CSV URL</label>
+            <input type="url" id="ppt-csv-url2" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8SVbCj5Dphj4hbUo_sdv-29yZB1uwcUgrwGKctLQ90Vfzf5IWarFTDb8WgCV7IJtNacsKVPo6nxGF/pub?output=csv"/></div>
+          <button class="btn gem" onclick="loadPptUrl2()" style="width:100%">Connect Presentations sheet ↗</button>
+          <div class="sep"></div>
+          <div class="fg"><label>Or paste CSV directly</label>
+            <textarea id="ppt-csv-paste2" rows="5" placeholder="Paste CSV content here…"></textarea></div>
+          <button class="btn" onclick="loadPptPaste2()" style="width:100%">Load pasted CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────── GUIDE ───────── -->
+  <div id="tab-guide" class="tab-body">
+    <div class="panel">
+      <div class="panel-hd"><h2>📖 Setup Guide</h2></div>
+      <div class="panel-body">
+        <div class="gem-box">✨ <strong>Gemini AI is integrated.</strong> Paste your Gemini API key in the banner at the top. It saves in your browser — no one else needs to enter it.</div>
+        <h3 style="font-size:13px;font-weight:600;margin-bottom:8px">Deadline system</h3>
+        <p style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:16px">Each student's deadlines roll every 7 days from their personal joining date.<br>
+        <strong>Week N deadline = Joining date + (N × 7 days) at the configured time.</strong></p>
+        <h3 style="font-size:13px;font-weight:600;margin-bottom:8px">Google Form 1 — Weekly Reports</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px">
+          <span class="chip">Timestamp</span><span class="chip">Your name</span><span class="chip">Roll no</span>
+          <span class="chip">Week number</span><span class="chip">Your weekly internship report (file upload)</span><span class="chip">Your weekly reflection report (file upload)</span>
+        </div>
+        <h3 style="font-size:13px;font-weight:600;margin-bottom:8px">Google Form 2 — Presentations</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px">
+          <span class="chip">Timestamp</span><span class="chip">Your name</span><span class="chip">Roll no</span>
+          <span class="chip">Company name</span><span class="chip">Project title</span><span class="chip">Your presentation (file upload or Slides URL)</span>
+        </div>
+        <h3 style="font-size:13px;font-weight:600;margin-bottom:8px">Gemini AI evaluation rubric</h3>
+        <table style="font-size:13px;border-collapse:collapse;width:100%;margin-bottom:16px">
+          <thead><tr>
+            <th style="padding:7px 12px;background:var(--bg3);border:1px solid var(--border);text-align:left">Criterion</th>
+            <th style="padding:7px 12px;background:var(--bg3);border:1px solid var(--border);text-align:left">Weight</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:7px 12px;border:1px solid var(--border)">Timeliness (Gemini confirms + comments)</td><td style="padding:7px 12px;border:1px solid var(--border)">40%</td></tr>
+            <tr><td style="padding:7px 12px;border:1px solid var(--border)">Both reports submitted</td><td style="padding:7px 12px;border:1px solid var(--border)">40%</td></tr>
+            <tr><td style="padding:7px 12px;border:1px solid var(--border)">Submission completeness</td><td style="padding:7px 12px;border:1px solid var(--border)">20%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAILS MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="modal-title"></h3>
+    <p id="modal-sub" style="font-size:12px;color:var(--text2);margin-bottom:16px"></p>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONFIG — paste Gemini key here OR enter
+//  it in the banner at the top of the page
+// ═══════════════════════════════════════════
+const EMBEDDED_KEY = 'AIzaSyBfo0Mt1aTFiC3nb0r4fkoTm-uuJmDkFyI';
+
+// ─── Gemini API ───
+function getKey(){ return document.getElementById('gemini-key').value.trim() || EMBEDDED_KEY || localStorage.getItem('gemini_key') || ''; }
+function saveKey(){
+  const k = document.getElementById('gemini-key').value.trim();
+  if(k){ localStorage.setItem('gemini_key', k); document.getElementById('key-status').style.display='inline'; }
+}
+
+async function callGemini(prompt){
+  const key = getKey();
+  if(!key) throw new Error('No Gemini API key set.');
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+    { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{ responseMimeType:'application/json', temperature:0.2 }
+      })
+    }
+  );
+  const data = await res.json();
+  if(data.error) throw new Error(data.error.message);
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let allRows  = [];
+let pptRows  = [];
+let roster   = {};
+const KNOWN_STUDENTS = [
+  'Jainisha Chauhan','Janvi Panwar','Jivanshu Sharma','Jyotirmayee Tripathi',
+  'Jyotsna Priya','Kanishq Goel','Kavya Singhal','Khushi Khandelwal',
+  'Krishna Malhotra','Krishnasagar K','Madhur Kala'
+];
+
+// ═══════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-body').forEach(t=>t.classList.remove('active'));
+  if(typeof el==='string') el=document.querySelectorAll('.tab')[['submissions','presentations','roster','connect','guide'].indexOf(el)];
+  if(el) el.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+//  DEADLINE MATH — rolling 7-day
+// ═══════════════════════════════════════════
+// Fixed PPT deadline — 12 May 2026 at 23:59
+const PPT_DEADLINE = new Date('2026-05-13T23:59:00');
+
+function getDeadline(joiningDateStr, weekNum, dlTime){
+  const base = new Date(joiningDateStr + 'T00:00:00');
+  const dl   = new Date(base);
+  dl.setDate(base.getDate() + weekNum * 7);
+  const [h,m] = (dlTime||'23:59').split(':').map(Number);
+  dl.setHours(h,m,0,0);
+  return dl;
+}
+function fmtDeadline(joiningDateStr, weekNum, dlTime){
+  if(!joiningDateStr) return '—';
+  if(parseInt(weekNum)===1) return 'No deadline';
+  const d = getDeadline(joiningDateStr, weekNum, dlTime);
+  return d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' '+dlTime;
+}
+function humanDuration(ms){
+  const totalMins = Math.floor(ms/60000);
+  const days=Math.floor(totalMins/1440), hours=Math.floor((totalMins%1440)/60), mins=totalMins%60;
+  if(days>0)  return hours>0 ? `${days}d ${hours}h` : `${days}d`;
+  if(hours>0) return mins>0  ? `${hours}h ${mins}m` : `${hours}h`;
+  return `${mins}m`;
+}
+function computeTimeliness(tsStr, studentName, weekNum){
+  if(!tsStr) return {status:'unknown',detail:''};
+  const sub = new Date(tsStr);
+  if(isNaN(sub)) return {status:'unknown',detail:''};
+  const wk = parseInt(weekNum)||1;
+  // Week 1 has no deadline
+  if(wk===1) return {status:'no-deadline', detail:'No deadline for Week 1'};
+  const dlTime  = document.getElementById('dl-time').value||'23:59';
+  const key     = (studentName||'').toLowerCase().trim();
+  const student = Object.values(roster).find(s=>s.name.toLowerCase().trim()===key);
+  if(!student||!student.joiningDate) return {status:'no-date',detail:'Add joining date in Roster tab'};
+  const deadline = getDeadline(student.joiningDate, wk, dlTime);
+  const diffMs   = sub - deadline;
+  if(diffMs<=0) return {status:'timely', detail:humanDuration(-diffMs)+' before deadline', deadline};
+  return {status:'late', detail:humanDuration(diffMs)+' late', deadline, diffMs};
+}
+function computePptTimeliness(tsStr){
+  if(!tsStr) return {status:'unknown',detail:''};
+  const sub = new Date(tsStr);
+  if(isNaN(sub)) return {status:'unknown',detail:''};
+  const diffMs = sub - PPT_DEADLINE;
+  if(diffMs<=0) return {status:'timely', detail:humanDuration(-diffMs)+' before deadline'};
+  return {status:'late', detail:humanDuration(diffMs)+' late'};
+}
+function fmtShort(d){ return d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+
+// ═══════════════════════════════════════════
+//  GEMINI EVALUATION — Weekly Reports
+// ═══════════════════════════════════════════
+async function evalOne(rowId){
+  const r = allRows.find(x=>x.id===rowId);
+  if(!r) return;
+  if(!getKey()){ alert('Please enter your Gemini API key in the banner at the top.'); return; }
+  r.aiStatus = 'loading'; render();
+  try {
+    const dlTime = document.getElementById('dl-time').value||'23:59';
+    const student = Object.values(roster).find(s=>s.name.toLowerCase().trim()===r.student.toLowerCase().trim());
+    const deadlineStr = student?.joiningDate ? fmtDeadline(student.joiningDate, parseInt(r.week)||1, dlTime) : 'unknown';
+
+    const prompt = `You are evaluating a student's weekly internship report submission. Return ONLY valid JSON.
+
+STUDENT: ${r.student} | Roll No: ${r.roll||'not provided'} | Week: ${r.week||'not specified'}
+SUBMITTED AT: ${r.ts||'unknown'}
+TIMELINESS: ${r.timeliness.status} — ${r.timeliness.detail} (Deadline was: ${deadlineStr})
+INTERNSHIP REPORT uploaded: ${r.internshipUrl ? 'Yes ✓' : 'No ✗'}
+REFLECTION REPORT uploaded: ${r.reflectionUrl ? 'Yes ✓' : 'No ✗'}
+
+Score each criterion (0–100) and return this JSON:
+{
+  "overall": <weighted score: timeliness*0.4 + reports*0.4 + completeness*0.2>,
+  "timeliness_score": <100 if on time, 0 if late, 50 if no joining date>,
+  "reports_score": <100 both uploaded, 50 one uploaded, 0 neither>,
+  "completeness_score": <100 if roll no + week filled, deduct for missing fields>,
+  "timeliness_comment": "<one sentence on submission timing, mention exact lateness if late>",
+  "strengths": "<1-2 positive observations>",
+  "improvements": "<1-2 specific things to fix>",
+  "summary": "<one verdict sentence, max 15 words>"
+}`;
+
+    const result = await callGemini(prompt);
+    r.aiStatus = 'done';
+    r.aiResult = result;
+  } catch(e){ console.error(e); r.aiStatus = 'error'; r.aiError = e.message; }
+  render();
+}
+
+async function evalAll(){
+  if(!getKey()){ alert('Please enter your Gemini API key in the banner at the top.'); return; }
+  for(const r of allRows.filter(x=>x.aiStatus==='pending')) await evalOne(r.id);
+}
+
+// ═══════════════════════════════════════════
+//  GEMINI EXTRACTION — Presentations
+// ═══════════════════════════════════════════
+async function extractOne(rowId){
+  const r = pptRows.find(x=>x.id===rowId);
+  if(!r) return;
+  if(!getKey()){ alert('Please enter your Gemini API key in the banner at the top.'); return; }
+  r.status = 'loading'; renderPpt();
+  try {
+    const prompt = `You are an assistant extracting internship details from a student submission. Return ONLY valid JSON.
+
+STUDENT: ${r.student} | Roll No: ${r.roll||'not provided'}
+COMPANY (if student provided it): ${r.company||'not provided'}
+PROJECT TITLE (if student provided it): ${r.project||'not provided'}
+PRESENTATION URL/LINK: ${r.pptUrl||'not provided'}
+
+Based on all available information (including inferring sector from company name if known), extract:
+- sector: the industry sector (e.g. FinTech, Healthcare, E-commerce, IT Services, EdTech, Banking, Manufacturing, Media, Logistics, etc.) — infer from company name if possible
+- company: the company/organisation name (use what student provided, or extract from URL/link if visible)
+- project: the project name or description (use what student provided, or describe as 'Not specified')
+- confidence: "high" if extracted directly, "inferred" if guessed from context, "low" if insufficient data
+
+Return JSON:
+{
+  "sector": "...",
+  "company": "...",
+  "project": "...",
+  "confidence": "high|inferred|low",
+  "notes": "<brief note on how you determined these values>"
+}`;
+
+    const result = await callGemini(prompt);
+    r.status     = 'done';
+    r.extracted  = result;
+  } catch(e){ console.error(e); r.status = 'error'; r.errMsg = e.message; }
+  renderPpt();
+}
+
+async function extractAll(){
+  if(!getKey()){ alert('Please enter your Gemini API key in the banner at the top.'); return; }
+  for(const r of pptRows.filter(x=>x.status==='pending')) await extractOne(r.id);
+}
+
+// ═══════════════════════════════════════════
+//  CSV PARSING — helpers
+// ═══════════════════════════════════════════
+function splitCSV(line){
+  const r=[]; let c=''; let q=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"') q=!q;
+    else if(line[i]===','&&!q){ r.push(c); c=''; }
+    else c+=line[i];
+  }
+  r.push(c); return r;
+}
+function csvToObjects(text){
+  const lines   = text.trim().split(/\r?\n/);
+  const headers = splitCSV(lines[0]).map(h=>h.trim());
+  const rows    = [];
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim()) continue;
+    const vals=splitCSV(lines[i]); const row={};
+    headers.forEach((h,j)=>{ row[h]=(vals[j]||'').replace(/^"|"$/g,'').trim(); });
+    rows.push(row);
+  }
+  return rows;
+}
+
+// ── Weekly Reports ──
+function parseReports(text, isLive){
+  const objects = csvToObjects(text);
+  const rows = objects.map((row,i)=>{
+    const name = (row['Your name']||row['Your name ']||'').trim();
+    if(!name) return null;
+    const week = (row['Week number']||row['Week number ']||'').trim();
+    const ts   = row['Timestamp']||'';
+    return {
+      id:i+1, student:name,
+      roll:(row['Roll no']||row['Roll no ']||'').trim(), week,
+      internshipUrl:(row['Your weekly internship report']||row['Your weekly internship report ']||'').trim(),
+      reflectionUrl:(row['Your weekly reflection report']||row['Your weekly reflection report ']||'').trim(),
+      ts, timeliness:computeTimeliness(ts, name, week),
+      aiStatus:'pending', aiResult:null, aiError:null
+    };
+  }).filter(Boolean);
+  allRows = rows;
+  document.getElementById('live-tag').style.display   = isLive?'inline-block':'none';
+  document.getElementById('loaded-tag').style.display = isLive?'none':'inline-block';
+  document.getElementById('eval-all-btn').style.display = rows.length?'inline-flex':'none';
+  switchTab('submissions', document.querySelectorAll('.tab')[0]);
+  render();
+}
+
+// ── Presentations ──
+function parsePpt(text, isLive){
+  const objects = csvToObjects(text);
+  const rows = objects.map((row,i)=>{
+    const name = (row['Your name']||row['Your name ']||'').trim();
+    if(!name) return null;
+    return {
+      id:i+1, student:name,
+      roll:(row['Roll no']||row['Roll no ']||'').trim(),
+      company:(row['Company name']||row['Company Name']||'').trim(),
+      project:(row['Project title']||row['Project Title']||'').trim(),
+      pptUrl:(row['Your presentation']||row['Your Presentation']||row['Presentation']||'').trim(),
+      ts:row['Timestamp']||'',
+      pptTimeliness:computePptTimeliness(row['Timestamp']||''),
+      status:'pending', extracted:null
+    };
+  }).filter(Boolean);
+  pptRows = rows;
+  document.getElementById('ppt-live-tag').style.display   = isLive?'inline-block':'none';
+  document.getElementById('ppt-loaded-tag').style.display = isLive?'none':'inline-block';
+  document.getElementById('extract-all-btn').style.display = rows.length?'inline-flex':'none';
+  document.getElementById('ppt-connect-wrap').style.display = 'none';
+  document.getElementById('ppt-table-wrap').style.display   = 'block';
+  renderPpt();
+}
+
+// ── Load functions ──
+async function loadFromUrl(){
+  const url=document.getElementById('csv-url').value.trim();
+  if(!url){ alert('Enter a CSV URL.'); return; }
+  const btn=event.target; btn.textContent='Loading…'; btn.disabled=true;
+  try{ parseReports(await safeFetch(url), true); }
+  catch(e){ alert('Could not fetch. Ensure the sheet is published as CSV and try again.'); }
+  btn.textContent='Connect & load ↗'; btn.disabled=false;
+}
+function loadFromPaste(){
+  const t=document.getElementById('csv-paste').value.trim();
+  if(!t){ alert('Paste CSV content.'); return; } parseReports(t,false);
+}
+async function loadPptUrl(){
+  const url=document.getElementById('ppt-csv-url').value.trim();
+  if(!url){ alert('Enter a CSV URL.'); return; }
+  const btn=event.target; btn.textContent='Loading…'; btn.disabled=true;
+  try{ parsePpt(await safeFetch(url), true); }
+  catch(e){ alert('Could not fetch. Ensure the sheet is published as CSV.'); }
+  btn.textContent='Connect Presentations sheet ↗'; btn.disabled=false;
+}
+function loadPptPaste(){
+  const t=document.getElementById('ppt-csv-paste').value.trim();
+  if(!t){ alert('Paste CSV content.'); return; } parsePpt(t,false);
+}
+async function loadPptUrl2(){
+  const url=document.getElementById('ppt-csv-url2').value.trim()||document.getElementById('ppt-csv-url').value.trim();
+  if(!url){ alert('Enter a CSV URL.'); return; }
+  const btn=event.target; btn.textContent='Loading…'; btn.disabled=true;
+  try{ parsePpt(await safeFetch(url), true); }
+  catch(e){ alert('Could not fetch. Ensure the sheet is published as CSV.'); }
+  btn.textContent='Connect Presentations sheet ↗'; btn.disabled=false;
+}
+function loadPptPaste2(){
+  const t=document.getElementById('ppt-csv-paste2').value.trim();
+  if(!t){ alert('Paste CSV content.'); return; } parsePpt(t,false);
+}
+
+// ═══════════════════════════════════════════
+//  RENDER — Submissions
+// ═══════════════════════════════════════════
+function render(){
+  const timely = allRows.filter(r=>r.timeliness.status==='timely').length;
+  const late   = allRows.filter(r=>r.timeliness.status==='late').length;
+  const noDate = allRows.filter(r=>r.timeliness.status==='no-date').length;
+  const scored = allRows.filter(r=>r.aiResult?.overall!=null);
+  const avg    = scored.length ? Math.round(scored.reduce((s,r)=>s+r.aiResult.overall,0)/scored.length) : null;
+  document.getElementById('st-total').textContent  = allRows.length;
+  document.getElementById('st-timely').textContent = timely;
+  document.getElementById('st-late').textContent   = late;
+  document.getElementById('st-nodate').textContent = noDate;
+  document.getElementById('st-avg').textContent    = avg!==null ? avg+'/100' : '—';
+  document.getElementById('eval-all-btn').style.display = allRows.length?'inline-flex':'none';
+
+  if(!allRows.length){
+    document.getElementById('table-wrap').innerHTML='<div class="empty">No data loaded. Use the <strong>Connect Sheets</strong> tab.</div>';
+    return;
+  }
+
+  let html=`<table><thead><tr>
+    <th>Student</th><th>Roll No.</th><th style="text-align:center">Wk</th>
+    <th>Submitted</th><th>Timeliness</th>
+    <th>Internship Rpt</th><th>Reflection Rpt</th>
+    <th style="min-width:240px">Gemini Evaluation</th>
+  </tr></thead><tbody>`;
+
+  allRows.forEach(r=>{
+    const sub    = r.ts ? new Date(r.ts) : null;
+    const subStr = sub&&!isNaN(sub)
+      ? sub.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})
+        +'<br><small style="color:var(--text2)">'+sub.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'</small>'
+      : '—';
+
+    let tCell='';
+    if(r.timeliness.status==='no-deadline'){
+      tCell=`<span class="badge b-gray">Week 1</span>
+        <div class="deadline-due" style="color:var(--text3)">No deadline applied</div>`;
+    } else if(r.timeliness.status==='timely'){
+      tCell=`<span class="badge b-green">✓ On time</span>
+        <div style="margin-top:4px"><span class="early-pill">⏰ ${r.timeliness.detail}</span></div>
+        <div class="deadline-due">Due: ${fmtShort(r.timeliness.deadline)}</div>`;
+    } else if(r.timeliness.status==='late'){
+      tCell=`<span class="badge b-red">✗ Late</span>
+        <div style="margin-top:4px"><span class="late-pill">🔴 ${r.timeliness.detail}</span></div>
+        <div class="deadline-due">Deadline was: ${fmtShort(r.timeliness.deadline)}</div>`;
+    } else if(r.timeliness.status==='no-date'){
+      tCell=`<span class="badge b-orange">No date</span>
+        <div class="deadline-due"><a href="#" onclick="switchTab('roster','roster');return false" style="font-size:10px;color:var(--info)">Set in Roster →</a></div>`;
+    } else { tCell='<span class="badge b-gray">—</span>'; }
+
+    const iLink=r.internshipUrl?`<a class="file-link" href="${esc(r.internshipUrl)}" target="_blank">📄 Weekly</a>`:'<span class="missing">Not submitted</span>';
+    const rLink=r.reflectionUrl?`<a class="file-link" href="${esc(r.reflectionUrl)}" target="_blank">📝 Reflection</a>`:'<span class="missing">Not submitted</span>';
+
+    let evalCell='';
+    if(r.aiStatus==='pending'){
+      evalCell=`<button class="btn sm gem" onclick="evalOne(${r.id})">✨ Evaluate</button>`;
+    } else if(r.aiStatus==='loading'){
+      evalCell=`<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <span style="font-size:11px;color:var(--purple);margin-left:6px">Gemini evaluating…</span>`;
+    } else if(r.aiStatus==='done'&&r.aiResult){
+      const res=r.aiResult; const ov=res.overall||0;
+      const col=ov>=80?'var(--success)':ov>=60?'var(--warning)':'var(--danger)';
+      evalCell=`<div style="display:flex;align-items:flex-start;gap:8px">
+        <div class="score-ring" style="color:${col};border-color:${col};margin-top:2px">${ov}</div>
+        <div style="flex:1">
+          ${mBar('Timeliness',res.timeliness_score||0)}
+          ${mBar('Reports',res.reports_score||0)}
+          ${mBar('Completeness',res.completeness_score||0)}
+        </div>
+        <button class="btn sm" onclick="showModal(${r.id})" style="flex-shrink:0;margin-top:2px">Details</button>
+      </div>`;
+    } else if(r.aiStatus==='error'){
+      evalCell=`<span style="font-size:11px;color:var(--danger)">Error — </span>
+        <button class="btn sm" onclick="evalOne(${r.id})">Retry</button>`;
+    }
+
+    html+=`<tr>
+      <td><strong>${esc(r.student)}</strong></td>
+      <td style="font-size:12px">${esc(r.roll||'—')}</td>
+      <td style="text-align:center;font-weight:700;font-size:16px">${esc(r.week||'—')}</td>
+      <td style="font-size:12px">${subStr}</td>
+      <td>${tCell}</td><td>${iLink}</td><td>${rLink}</td>
+      <td>${evalCell}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('table-wrap').innerHTML=html;
+}
+
+function mBar(label,val,na=false){
+  if(na) return `<div class="mini-bar"><span class="lbl">${label}</span><span class="val" style="color:var(--text3)">N/A</span></div>`;
+  const col=val>=80?'var(--success)':val>=60?'var(--warning)':'var(--danger)';
+  return `<div class="mini-bar"><span class="lbl">${label}</span>
+    <div class="track"><div class="fill" style="width:${val}%;background:${col}"></div></div>
+    <span class="val" style="color:${col}">${val}</span></div>`;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER — Presentations
+// ═══════════════════════════════════════════
+function renderPpt(){
+  if(!pptRows.length){
+    document.getElementById('ppt-table-wrap').innerHTML='<div class="empty">No presentation data loaded.</div>';
+    return;
+  }
+  document.getElementById('extract-all-btn').style.display='inline-flex';
+  const PPT_DL_STR = 'Tue, 13 May 2026 · 23:59';
+  let html=`<table><thead><tr>
+    <th>Student</th><th>Roll No.</th><th>Submitted</th>
+    <th>PPT Deadline<br><span style="font-weight:400;color:var(--text3)">${PPT_DL_STR}</span></th>
+    <th>Sector</th><th>Company</th><th>Project</th>
+    <th>Presentation</th><th style="min-width:180px">Extraction</th>
+  </tr></thead><tbody>`;
+
+  pptRows.forEach(r=>{
+    const sub=r.ts?new Date(r.ts):null;
+    const subStr=sub&&!isNaN(sub)?sub.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+
+    let sectorCell='<span class="missing">—</span>';
+    let companyCell='<span class="missing">—</span>';
+    let projectCell='<span class="missing">—</span>';
+    let actionCell='';
+
+    if(r.status==='pending'){
+      // Show what student provided
+      if(r.company) companyCell=`<span class="xtag company">${esc(r.company)}</span>`;
+      if(r.project) projectCell=`<span class="xtag project">${esc(r.project)}</span>`;
+      actionCell=`<button class="btn sm gem" onclick="extractOne(${r.id})">✨ Extract</button>`;
+    } else if(r.status==='loading'){
+      actionCell=`<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    } else if(r.status==='done'&&r.extracted){
+      const ex=r.extracted;
+      const conf=ex.confidence==='high'?'b-green':ex.confidence==='inferred'?'b-amber':'b-gray';
+      sectorCell  = ex.sector  && ex.sector !=='Not specified' ? `<span class="xtag sector">${esc(ex.sector)}</span>`  : '<span class="missing">—</span>';
+      companyCell = ex.company && ex.company!=='Not specified' ? `<span class="xtag company">${esc(ex.company)}</span>` : '<span class="missing">—</span>';
+      projectCell = ex.project && ex.project!=='Not specified' ? `<span class="xtag project">${esc(ex.project)}</span>` : '<span class="missing">—</span>';
+      actionCell=`<div><span class="badge ${conf}" style="font-size:10px">${ex.confidence}</span>
+        <button class="btn sm" onclick="showPptModal(${r.id})" style="margin-top:4px;display:block">Details</button></div>`;
+    } else if(r.status==='error'){
+      actionCell=`<span style="font-size:11px;color:var(--danger)">Error — </span><button class="btn sm" onclick="extractOne(${r.id})">Retry</button>`;
+    }
+
+    const pptLink=r.pptUrl
+      ?`<a class="file-link" href="${esc(r.pptUrl)}" target="_blank">📊 Open</a>`
+      :'<span class="missing">Not provided</span>';
+
+    // PPT timeliness cell
+    let pptTCell='';
+    const pt=r.pptTimeliness||computePptTimeliness(r.ts);
+    if(pt.status==='timely'){
+      pptTCell=`<span class="badge b-green">✓ On time</span><div style="margin-top:3px"><span class="early-pill" style="font-size:10px">⏰ ${pt.detail}</span></div>`;
+    } else if(pt.status==='late'){
+      pptTCell=`<span class="badge b-red">✗ Late</span><div style="margin-top:3px"><span class="late-pill" style="font-size:10px">🔴 ${pt.detail}</span></div>`;
+    } else {
+      pptTCell='<span class="badge b-gray">—</span>';
+    }
+
+    html+=`<tr>
+      <td><strong>${esc(r.student)}</strong></td>
+      <td style="font-size:12px">${esc(r.roll||'—')}</td>
+      <td style="font-size:12px">${subStr}</td>
+      <td>${pptTCell}</td>
+      <td>${sectorCell}</td>
+      <td>${companyCell}</td>
+      <td>${projectCell}</td>
+      <td>${pptLink}</td>
+      <td>${actionCell}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('ppt-table-wrap').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════
+function showModal(rowId){
+  const r=allRows.find(x=>x.id===rowId); if(!r||!r.aiResult) return;
+  const res=r.aiResult;
+  const sub=r.ts?new Date(r.ts):null;
+  const dlTime=document.getElementById('dl-time').value||'23:59';
+  const student=Object.values(roster).find(s=>s.name.toLowerCase().trim()===r.student.toLowerCase().trim());
+  const wk=parseInt(r.week)||1;
+  const deadlineStr=student?.joiningDate?fmtDeadline(student.joiningDate,wk,dlTime):'—';
+  const col=res.overall>=80?'var(--success)':res.overall>=60?'var(--warning)':'var(--danger)';
+
+  document.getElementById('modal-title').textContent=`${r.student} — Week ${r.week||'?'}`;
+  document.getElementById('modal-sub').innerHTML=`Roll: <strong>${r.roll||'—'}</strong> &nbsp;·&nbsp; Submitted: <strong>${sub&&!isNaN(sub)?sub.toLocaleString('en-GB'):'—'}</strong>`;
+
+  let alertHtml='';
+  if(r.timeliness.status==='late'){
+    alertHtml=`<div class="late-alert">🔴 <div><strong>Submitted ${r.timeliness.detail}</strong><br>Deadline was: <strong>${deadlineStr}</strong></div></div>`;
+  } else if(r.timeliness.status==='timely'){
+    alertHtml=`<div class="ontime-alert">✅ <div><strong>Submitted on time</strong> — ${r.timeliness.detail}<br>Deadline: <strong>${deadlineStr}</strong></div></div>`;
+  }
+
+  document.getElementById('modal-body').innerHTML=`
+  <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--bg3);border-radius:var(--radius);margin-bottom:16px">
+    <div class="score-ring" style="width:52px;height:52px;font-size:17px;color:${col};border-color:${col}">${res.overall}</div>
+    <div><div style="font-size:16px;font-weight:700">Overall: ${res.overall}/100</div>
+    <div style="font-size:12px;color:var(--text2);margin-top:3px">Week ${r.week} deadline: ${deadlineStr}</div></div>
+  </div>
+  ${alertHtml}
+  <div style="margin-bottom:16px">
+    ${sBar('Timeliness (40%)',res.timeliness_score)}
+    ${sBar('Both reports (40%)',res.reports_score)}
+    ${sBar('Completeness (20%)',res.completeness_score)}
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:16px">
+    <div style="flex:1;padding:12px;border-radius:var(--radius);border:1px solid var(--border);text-align:center">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">INTERNSHIP REPORT</div>
+      ${r.internshipUrl?`<a class="file-link" href="${esc(r.internshipUrl)}" target="_blank">📄 Open file ↗</a>`:'<span class="missing">Not submitted</span>'}
+    </div>
+    <div style="flex:1;padding:12px;border-radius:var(--radius);border:1px solid var(--border);text-align:center">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">REFLECTION REPORT</div>
+      ${r.reflectionUrl?`<a class="file-link" href="${esc(r.reflectionUrl)}" target="_blank">📝 Open file ↗</a>`:'<span class="missing">Not submitted</span>'}
+    </div>
+  </div>
+  <div style="background:var(--bg-purple);border:1px solid #ddd6fe;border-radius:var(--radius);padding:14px">
+    <div style="font-size:11px;font-weight:700;color:var(--purple);letter-spacing:.05em;margin-bottom:10px">✨ GEMINI FEEDBACK</div>
+    ${res.timeliness_comment?`<div style="font-size:12px;margin-bottom:8px"><strong>Timeliness:</strong> ${res.timeliness_comment}</div>`:''}
+    ${res.strengths?`<div style="font-size:12px;margin-bottom:8px"><strong>Strengths:</strong> ${res.strengths}</div>`:''}
+    ${res.improvements?`<div style="font-size:12px;margin-bottom:8px"><strong>To improve:</strong> ${res.improvements}</div>`:''}
+    ${res.summary?`<div style="font-size:12px;font-style:italic;color:var(--purple);margin-top:8px;padding-top:8px;border-top:1px solid #ddd6fe">${res.summary}</div>`:''}
+  </div>`;
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function showPptModal(rowId){
+  const r=pptRows.find(x=>x.id===rowId); if(!r||!r.extracted) return;
+  const ex=r.extracted;
+  const conf=ex.confidence==='high'?'b-green':ex.confidence==='inferred'?'b-amber':'b-gray';
+
+  document.getElementById('modal-title').textContent=`${r.student} — Presentation`;
+  document.getElementById('modal-sub').innerHTML=`Roll: <strong>${r.roll||'—'}</strong> &nbsp;·&nbsp; Submitted: <strong>${r.ts||'—'}</strong>`;
+
+  document.getElementById('modal-body').innerHTML=`
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+    <div style="padding:14px;border-radius:var(--radius);background:var(--bg-purple);border:1px solid #ddd6fe;text-align:center">
+      <div style="font-size:10px;font-weight:700;color:var(--purple);margin-bottom:8px">SECTOR</div>
+      <div style="font-size:15px;font-weight:600">${ex.sector||'—'}</div>
+    </div>
+    <div style="padding:14px;border-radius:var(--radius);background:var(--bg-info);border:1px solid #bfdbfe;text-align:center">
+      <div style="font-size:10px;font-weight:700;color:var(--info);margin-bottom:8px">COMPANY</div>
+      <div style="font-size:15px;font-weight:600">${ex.company||'—'}</div>
+    </div>
+    <div style="padding:14px;border-radius:var(--radius);background:var(--bg-success);border:1px solid #86efac;text-align:center">
+      <div style="font-size:10px;font-weight:700;color:var(--success);margin-bottom:8px">PROJECT</div>
+      <div style="font-size:14px;font-weight:600">${ex.project||'—'}</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+    <span style="font-size:12px;color:var(--text2)">Extraction confidence:</span>
+    <span class="badge ${conf}">${ex.confidence}</span>
+  </div>
+  ${r.pptUrl?`<div style="margin-bottom:14px"><a class="file-link" href="${esc(r.pptUrl)}" target="_blank">📊 Open presentation ↗</a></div>`:''}
+  ${ex.notes?`<div style="background:var(--bg3);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text2)"><strong>How Gemini extracted this:</strong><br>${ex.notes}</div>`:''}`;
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function sBar(label,val){
+  if(val==null) return `<div class="sbar"><span class="slbl">${label}</span><span style="font-size:12px;color:var(--text3)">N/A</span></div>`;
+  const col=val>=80?'#16a34a':val>=60?'#d97706':'#dc2626';
+  return `<div class="sbar"><span class="slbl">${label}</span>
+    <div class="strack"><div class="sfill" style="width:${val}%;background:${col}"></div></div>
+    <span class="snum" style="color:${col}">${val}/100</span></div>`;
+}
+
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target===e.currentTarget)closeModal(); });
+
+// ═══════════════════════════════════════════
+//  ROSTER
+// ═══════════════════════════════════════════
+function renderRoster(){
+  const dlTime=document.getElementById('dl-time').value||'23:59';
+  const students=Object.values(roster);
+  let html='';
+  if(!students.length){
+    html='<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text3)">No students yet.</td></tr>';
+  }
+  students.forEach(s=>{
+    const k=s.name.toLowerCase();
+    html+=`<tr>
+      <td><input value="${esc(s.name)}" onchange="updateRoster('${k}','name',this.value)" style="width:150px"/></td>
+      <td><input value="${esc(s.roll||'')}" onchange="updateRoster('${k}','roll',this.value)" style="width:90px"/></td>
+      <td><input type="date" value="${s.joiningDate||''}" onchange="updateRoster('${k}','joiningDate',this.value)" style="width:140px"/></td>
+      <td style="font-size:11px;color:var(--text3);font-style:italic">${s.joiningDate?'No deadline':'—'}</td>
+      <td style="font-size:11px;color:var(--text2)">${s.joiningDate?fmtDeadline(s.joiningDate,2,dlTime):'—'}</td>
+      <td style="font-size:11px;color:var(--text2)">${s.joiningDate?fmtDeadline(s.joiningDate,3,dlTime):'—'}</td>
+      <td><button class="btn sm danger" onclick="removeRoster('${k}')">✕</button></td>
+    </tr>`;
+  });
+  document.getElementById('roster-body').innerHTML=html;
+}
+function updateRoster(oldKey,field,val){
+  const s=roster[oldKey]; if(!s) return;
+  if(field==='name'){delete roster[oldKey];s.name=val;roster[val.toLowerCase()]=s;}
+  else s[field]=val;
+}
+function addRosterRow(){
+  const n='Student '+(Object.keys(roster).length+1);
+  roster[n.toLowerCase()]={name:n,roll:'',joiningDate:''}; renderRoster();
+}
+function removeRoster(k){ delete roster[k]; renderRoster(); }
+function bulkAdd(){
+  document.getElementById('bulk-names').value.trim().split('\n').map(n=>n.trim()).filter(Boolean)
+    .forEach(name=>{ const k=name.toLowerCase(); if(!roster[k]) roster[k]={name,roll:'',joiningDate:''}; });
+  document.getElementById('bulk-names').value=''; renderRoster();
+}
+function recomputeAll(){
+  renderRoster();
+  allRows.forEach(r=>{ r.timeliness=computeTimeliness(r.ts,r.student,r.week); });
+  render();
+}
+
+// ─── helpers ───
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── CORS-SAFE FETCH ───
+// Tries direct fetch first (works on GitHub Pages / any web server).
+// If blocked (local file:// usage), tries three different CORS proxies in sequence.
+// If all fail, returns null so the caller can show the paste fallback.
+const PROXIES = [
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+async function safeFetch(url){
+  const bust = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  // 1. Try direct
+  try {
+    const r = await Promise.race([
+      fetch(bust),
+      new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+    ]);
+    if(r.ok){ const t = await r.text(); if(t && t.includes(',')) return t; }
+  } catch(_){}
+  // 2. Try each proxy in order
+  for(const makeUrl of PROXIES){
+    try {
+      const r = await Promise.race([
+        fetch(makeUrl(bust)),
+        new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 7000))
+      ]);
+      if(r.ok){ const t = await r.text(); if(t && t.includes(',')) return t; }
+    } catch(_){ continue; }
+  }
+  return null; // All failed — caller will show paste dialog
+}
+
+// ─── REFRESH ───
+async function refreshAll(){
+  const btn = document.getElementById('refresh-btn');
+  btn.textContent = '🔄 Refreshing…'; btn.disabled = true;
+  let ok1 = false, ok2 = false;
+  try {
+    const text = await safeFetch(REPORTS_CSV_URL);
+    if(text){ parseReports(text, true); ok1 = true; }
+  } catch(e){}
+  try {
+    const text = await safeFetch(PRESENTATIONS_CSV_URL);
+    if(text){ parsePpt(text, true); ok2 = true; }
+  } catch(e){}
+  btn.textContent = '🔄 Refresh'; btn.disabled = false;
+  if(!ok1 || !ok2){
+    alert('Auto-refresh blocked (file:// CORS).
+
+To fix permanently: host on GitHub Pages (free, 5 min).
+For now: use Connect Sheets tab → paste CSV content directly.');
+  }
+}
+
+// ─── EMBEDDED SHEET URLS ───
+const REPORTS_CSV_URL      = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEW7ei-oB7Y3AAe2DQuGP79XI4erlRcYbfyYnAFZ-Fhkzur19yVx2V0ax-THiJH9OxtJd0BH2Dg_m/pub?output=csv';
+const PRESENTATIONS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8SVbCj5Dphj4hbUo_sdv-29yZB1uwcUgrwGKctLQ90Vfzf5IWarFTDb8WgCV7IJtNacsKVPo6nxGF/pub?output=csv';
+
+// ─── INIT ───
+KNOWN_STUDENTS.forEach(name=>{ roster[name.toLowerCase()]={name,roll:'',joiningDate:''}; });
+renderRoster();
+const savedKey=localStorage.getItem('gemini_key');
+if(savedKey){ document.getElementById('gemini-key').value=savedKey; document.getElementById('key-status').style.display='inline'; }
+
+// Auto-load both sheets on page open
+(async function autoLoad(){
+  let reportsOk = false, pptOk = false;
+  try {
+    const text = await safeFetch(REPORTS_CSV_URL);
+    if(text){ parseReports(text, true); reportsOk = true; }
+  } catch(e){}
+  try {
+    const text = await safeFetch(PRESENTATIONS_CSV_URL);
+    if(text){ parsePpt(text, true); pptOk = true; }
+  } catch(e){}
+  if(!reportsOk || !pptOk) showPasteHelper(reportsOk, pptOk);
+})();
+
+function showPasteHelper(reportsOk, pptOk){
+  const msg = document.getElementById('paste-helper-msg');
+  if(!msg) return;
+  let lines = ['⚠️ Auto-load blocked (file:// CORS restriction). Quick fixes:',
+    '1. <strong>Easiest:</strong> Go to Connect Sheets tab → paste CSV content directly.',
+    '2. <strong>Permanent fix:</strong> Host on GitHub Pages (free) — then Refresh works automatically.',
+    !reportsOk ? '• Reports sheet: needs manual paste' : '',
+    !pptOk     ? '• Presentations sheet: needs manual paste' : ''
+  ].filter(Boolean);
+  msg.innerHTML = lines.join('<br>');
+  msg.style.display = 'block';
+}
+</script>
+</body>
+</html>
