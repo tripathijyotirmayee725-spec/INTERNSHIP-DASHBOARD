@@ -987,11 +987,14 @@ async function refreshAll(){
     if(text){ parsePpt(text, true); ok2 = true; }
   } catch(e){}
   btn.textContent = '🔄 Refresh'; btn.disabled = false;
-  if(!ok1 || !ok2){
-    alert('Auto-refresh blocked (file:// CORS).
+  if(!ok1 || !ok2)
+  {
+  alert(`Auto-refresh blocked (file:// CORS).
 
 To fix permanently: host on GitHub Pages (free, 5 min).
-For now: use Connect Sheets tab → paste CSV content directly.');
+
+For now: use Connect Sheets tab → paste CSV content directly.`);
+}
   }
 }
 
