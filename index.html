@@ -988,7 +988,10 @@ async function refreshAll(){
   } catch(e){}
   btn.textContent = '🔄 Refresh'; btn.disabled = false;
   if(!ok1 || !ok2)
-  {
+  btn.textContent = '🔄 Refresh';
+btn.disabled = false;
+
+if(!ok1 || !ok2){
   alert(`Auto-refresh blocked (file:// CORS).
 
 To fix permanently: host on GitHub Pages (free, 5 min).
@@ -996,7 +999,7 @@ To fix permanently: host on GitHub Pages (free, 5 min).
 For now: use Connect Sheets tab → paste CSV content directly.`);
 }
   }
-}
+
 
 // ─── EMBEDDED SHEET URLS ───
 const REPORTS_CSV_URL      = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEW7ei-oB7Y3AAe2DQuGP79XI4erlRcYbfyYnAFZ-Fhkzur19yVx2V0ax-THiJH9OxtJd0BH2Dg_m/pub?output=csv';
