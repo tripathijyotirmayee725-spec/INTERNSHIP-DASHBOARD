@@ -1023,23 +1023,9 @@ async function safeFetch(url, label){
       if(t && t.length > 10){ setStatus(''); return t; }
     }
   } catch(e){ console.warn('Direct fetch failed:', e.message); }
-  // 2. Try each proxy
-  for(let i=0;i<PROXIES.length;i++){
-    try {
-      setStatus('⏳ Trying proxy ' + (i+1) + '/'+PROXIES.length+' for ' + (label||'data') + '…');
-      const r = await Promise.race([
-        fetch(PROXIES[i](bust), {cache:'no-store'}),
-        new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
-      ]);
-      if(r.ok){
-        const t = await r.text();
-        if(t && t.length > 10){ setStatus(''); return t; }
-      }
-    } catch(e){ console.warn('Proxy '+(i+1)+' failed:', e.message); }
-  }
-  setStatus('');
   return null;
 }
+
 
 // ─── REFRESH ───
 async function refreshAll(){
