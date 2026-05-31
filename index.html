@@ -101,6 +101,7 @@ textarea{resize:vertical;line-height:1.5}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:600px){.grid-2{grid-template-columns:1fr}}
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="wrapper">
@@ -486,7 +487,9 @@ async function evalOne(rowId){
 STUDENT: ${r.student} | Roll No: ${r.roll||'not provided'} | Week: ${r.week||'not specified'}
 SUBMITTED AT: ${r.ts||'unknown'}
 TIMELINESS: ${r.timeliness.status} — ${r.timeliness.detail} (Deadline was: ${deadlineStr})
-INTERNSHIP REPORT uploaded: ${r.internshipUrl ? 'Yes ✓' : 'No ✗'}
+INTERNSHIP REPORT CONTENT:
+
+${internshipContent}
 REFLECTION REPORT uploaded: ${r.reflectionUrl ? 'Yes ✓' : 'No ✗'}
 
 Score each criterion (0–100) and return this JSON:
@@ -581,6 +584,48 @@ function csvToObjects(text){
   return rows;
 }
 
+  function normalizeDriveLink(url)
+  {
+
+  if(!url) return '';
+
+  let id = '';
+
+  const openMatch = url.match(/[?&]id=([^&]+)/);
+  if(openMatch) id = openMatch[1];
+
+  const fileMatch = url.match(/\/d\/([^\/]+)/);
+  if(fileMatch) id = fileMatch[1];
+
+  if(!id) return url;
+
+  return `https://drive.google.com/uc?export=download&id=${id}`;
+}
+
+  async function readExcelFile(fileUrl){
+
+  const response = await fetch(fileUrl);
+
+  const buffer = await response.arrayBuffer();
+
+  const workbook = XLSX.read(buffer,{
+      type:'array'
+  });
+
+  let text = '';
+
+  workbook.SheetNames.forEach(sheetName=>{
+
+      const sheet = workbook.Sheets[sheetName];
+
+      text += XLSX.utils.sheet_to_csv(sheet);
+
+      text += '\n\n';
+
+  });
+
+  return text;
+}
 // ── Weekly Reports ──
 function parseReports(text, isLive){
 
@@ -606,10 +651,8 @@ function parseReports(text, isLive){
 
       week,
 
-      internshipUrl:(row['Weekly report'] || '').trim(),
-
-      reflectionUrl:(row['Reflection report submission'] || '').trim(),
-
+   internshipUrl: normalizeDriveLink((row['Weekly report']||'').trim()),
+   reflectionUrl: normalizeDriveLink((row['Reflection report submission']||'').trim()),
       ts,
 
       timeliness:computeTimeliness(ts,name,week),
@@ -646,18 +689,29 @@ function parseReports(text, isLive){
 function parsePpt(text, isLive){
   const objects = csvToObjects(text);
   const rows = objects.map((row,i)=>{
-    const name = (row['Your name']||row['Your name ']||'').trim();
-    if(!name) return null;
-    return {
-      id:i+1, student:name,
-      roll:(row['Roll no']||row['Roll no ']||'').trim(),
-      company:(row['Company name']||row['Company Name']||'').trim(),
-      project:(row['Project title']||row['Project Title']||'').trim(),
-      pptUrl:(row['Your presentation']||row['Your Presentation']||row['Presentation']||'').trim(),
-      ts:row['Timestamp']||'',
-      pptTimeliness:computePptTimeliness(row['Timestamp']||''),
-      status:'pending', extracted:null
-    };
+    const name = (row['Name']||'').trim();
+
+if(!name) return null;
+
+return {
+    id:i+1,
+    student:name,
+    roll:(row['Roll number']||'').trim(),
+
+    company:'Not Provided',
+    project:'Not Provided',
+
+    pptUrl:(row['PPT submission']||'').trim(),
+
+    ts:row['Timestamp']||'',
+
+    pptTimeliness:computePptTimeliness(row['Timestamp']||''),
+
+    status:'pending',
+
+    extracted:null
+};
+
   }).filter(Boolean);
   pptRows = rows;
   document.getElementById('ppt-live-tag').style.display   = isLive?'inline-block':'none';
@@ -760,7 +814,17 @@ function render(){
 
     const iLink=r.internshipUrl?`<a class="file-link" href="${esc(r.internshipUrl)}" target="_blank">📄 Weekly</a>`:'<span class="missing">Not submitted</span>';
     const rLink=r.reflectionUrl?`<a class="file-link" href="${esc(r.reflectionUrl)}" target="_blank">📝 Reflection</a>`:'<span class="missing">Not submitted</span>';
+let internshipContent = '';
 
+try{
+  if(r.internshipUrl){
+    internshipContent =
+      await readExcelFile(r.internshipUrl);
+  }
+}catch(err){
+  internshipContent =
+      'Could not read Excel file';
+}
     let evalCell='';
     if(r.aiStatus==='pending'){
       evalCell=`<button class="btn sm gem" onclick="evalOne(${r.id})">✨ Evaluate</button>`;
