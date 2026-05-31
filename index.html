@@ -128,11 +128,11 @@ textarea{resize:vertical;line-height:1.5}
   <div id="paste-helper-msg" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#9a3412;line-height:1.8"></div>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('submissions',this)">📋 Submissions</div>
-    <div class="tab"        onclick="switchTab('presentations',this)">🎯 Presentations</div>
-    <div class="tab"        onclick="switchTab('roster',this)">👥 Roster</div>
-    <div class="tab"        onclick="switchTab('connect',this)">🔗 Connect Sheets</div>
-    <div class="tab"        onclick="switchTab('guide',this)">📖 Guide</div>
+    <div class="tab active" data-tab="submissions"   onclick="switchTab('submissions')">📋 Submissions</div>
+    <div class="tab"        data-tab="presentations" onclick="switchTab('presentations')">🎯 Presentations</div>
+    <div class="tab"        data-tab="roster"        onclick="switchTab('roster')">👥 Roster</div>
+    <div class="tab"        data-tab="connect"       onclick="switchTab('connect')">🔗 Connect Sheets</div>
+    <div class="tab"        data-tab="guide"         onclick="switchTab('guide')">📖 Guide</div>
   </div>
 
   <!-- ───────── SUBMISSIONS ───────── -->
@@ -150,7 +150,7 @@ textarea{resize:vertical;line-height:1.5}
         <div style="display:flex;gap:6px;align-items:center">
           <span id="live-tag"   style="display:none" class="badge b-green">● Live</span>
           <span id="loaded-tag" style="display:none" class="badge b-gray">CSV loaded</span>
-          <button class="btn sm primary" onclick="switchTab('connect',document.querySelectorAll('.tab')[3])">+ Load data</button>
+          <button class="btn sm primary" onclick="switchTab('connect')">+ Load data</button>
         </div>
       </div>
       <div id="table-wrap" style="overflow-x:auto">
@@ -355,12 +355,16 @@ const KNOWN_STUDENTS = [
 // ═══════════════════════════════════════════
 //  TABS
 // ═══════════════════════════════════════════
-function switchTab(id,el){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-body').forEach(t=>t.classList.remove('active'));
-  if(typeof el==='string') el=document.querySelectorAll('.tab')[['submissions','presentations','roster','connect','guide'].indexOf(el)];
-  if(el) el.classList.add('active');
-  document.getElementById('tab-'+id).classList.add('active');
+function switchTab(id){
+  // Remove active from all tabs and bodies
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-body').forEach(t => t.classList.remove('active'));
+  // Activate the matching tab button via data-tab attribute
+  const tabEl = document.querySelector('.tab[data-tab="' + id + '"]');
+  if(tabEl) tabEl.classList.add('active');
+  // Activate the matching body
+  const bodyEl = document.getElementById('tab-' + id);
+  if(bodyEl) bodyEl.classList.add('active');
 }
 
 // ═══════════════════════════════════════════
@@ -550,7 +554,7 @@ function parseReports(text, isLive){
   document.getElementById('live-tag').style.display   = isLive?'inline-block':'none';
   document.getElementById('loaded-tag').style.display = isLive?'none':'inline-block';
   document.getElementById('eval-all-btn').style.display = rows.length?'inline-flex':'none';
-  switchTab('submissions', document.querySelectorAll('.tab')[0]);
+  switchTab('submissions');
   render();
 }
 
@@ -667,7 +671,7 @@ function render(){
         <div class="deadline-due">Deadline was: ${fmtShort(r.timeliness.deadline)}</div>`;
     } else if(r.timeliness.status==='no-date'){
       tCell=`<span class="badge b-orange">No date</span>
-        <div class="deadline-due"><a href="#" onclick="switchTab('roster','roster');return false" style="font-size:10px;color:var(--info)">Set in Roster →</a></div>`;
+        <div class="deadline-due"><a href="#" onclick="switchTab('roster');return false" style="font-size:10px;color:var(--info)">Set in Roster →</a></div>`;
     } else { tCell='<span class="badge b-gray">—</span>'; }
 
     const iLink=r.internshipUrl?`<a class="file-link" href="${esc(r.internshipUrl)}" target="_blank">📄 Weekly</a>`:'<span class="missing">Not submitted</span>';
@@ -987,19 +991,10 @@ async function refreshAll(){
     if(text){ parsePpt(text, true); ok2 = true; }
   } catch(e){}
   btn.textContent = '🔄 Refresh'; btn.disabled = false;
-  if(!ok1 || !ok2)
-  btn.textContent = '🔄 Refresh';
-btn.disabled = false;
-
-if(!ok1 || !ok2){
-  alert(`Auto-refresh blocked (file:// CORS).
-
-To fix permanently: host on GitHub Pages (free, 5 min).
-
-For now: use Connect Sheets tab → paste CSV content directly.`);
-}
+  if(!ok1 || !ok2){
+    alert('Auto-refresh blocked (file:// CORS). To fix: use Connect Sheets tab and paste CSV directly, or host on GitHub Pages.');
   }
-
+}
 
 // ─── EMBEDDED SHEET URLS ───
 const REPORTS_CSV_URL      = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEW7ei-oB7Y3AAe2DQuGP79XI4erlRcYbfyYnAFZ-Fhkzur19yVx2V0ax-THiJH9OxtJd0BH2Dg_m/pub?output=csv';
@@ -1011,18 +1006,21 @@ renderRoster();
 const savedKey=localStorage.getItem('gemini_key');
 if(savedKey){ document.getElementById('gemini-key').value=savedKey; document.getElementById('key-status').style.display='inline'; }
 
-// Auto-load both sheets on page open
+// Auto-load both sheets on page open — fully isolated so any error never
+// breaks tab clicks or other UI interactions
 (async function autoLoad(){
   let reportsOk = false, pptOk = false;
   try {
     const text = await safeFetch(REPORTS_CSV_URL);
     if(text){ parseReports(text, true); reportsOk = true; }
-  } catch(e){}
+  } catch(e){ console.warn('Reports auto-load error:', e); }
   try {
     const text = await safeFetch(PRESENTATIONS_CSV_URL);
     if(text){ parsePpt(text, true); pptOk = true; }
-  } catch(e){}
-  if(!reportsOk || !pptOk) showPasteHelper(reportsOk, pptOk);
+  } catch(e){ console.warn('PPT auto-load error:', e); }
+  try { showPasteHelper(reportsOk, pptOk); } catch(e){}
+  // Always switch back to submissions tab after load
+  try { switchTab('submissions'); } catch(e){}
 })();
 
 function showPasteHelper(reportsOk, pptOk){
