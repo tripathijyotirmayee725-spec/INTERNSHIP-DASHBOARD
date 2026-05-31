@@ -583,27 +583,64 @@ function csvToObjects(text){
 
 // ── Weekly Reports ──
 function parseReports(text, isLive){
+
   const objects = csvToObjects(text);
+
   const rows = objects.map((row,i)=>{
-  const name = (row['Name']||'').trim();
+
+    const name = (row['Name'] || '').trim();
+
     if(!name) return null;
-      const week = (row['Week num']||'').trim();    const ts   = row['Timestamp']||'';
+
+    const week = (row['Week num'] || '').trim();
+
+    const ts = row['Timestamp'] || '';
+
     return {
-      id:i+1, student:name,
-      roll:(row['Roll number']||'').trim(), week,
-      internshipUrl:(row['Weekly report']||'').trim(),      
-      reflectionUrl:(row['Reflection report submission']||'').trim(),
-      ts, timeliness:computeTimeliness(ts, name, week),
-      aiStatus:'pending', aiResult:null, aiError:null
+
+      id:i+1,
+
+      student:name,
+
+      roll:(row['Roll number'] || '').trim(),
+
+      week,
+
+      internshipUrl:(row['Weekly report'] || '').trim(),
+
+      reflectionUrl:(row['Reflection report submission'] || '').trim(),
+
+      ts,
+
+      timeliness:computeTimeliness(ts,name,week),
+
+      aiStatus:'pending',
+
+      aiResult:null,
+
+      aiError:null
+
     };
+
   }).filter(Boolean);
+
   allRows = rows;
-  document.getElementById('live-tag').style.display   = isLive?'inline-block':'none';
-  document.getElementById('loaded-tag').style.display = isLive?'none':'inline-block';
-  document.getElementById('eval-all-btn').style.display = rows.length?'inline-flex':'none';
+
+  document.getElementById('live-tag').style.display =
+      isLive ? 'inline-block' : 'none';
+
+  document.getElementById('loaded-tag').style.display =
+      isLive ? 'none' : 'inline-block';
+
+  document.getElementById('eval-all-btn').style.display =
+      rows.length ? 'inline-flex' : 'none';
+
   switchTab('submissions');
+
   render();
-}
+
+};
+
 
 // ── Presentations ──
 function parsePpt(text, isLive){
