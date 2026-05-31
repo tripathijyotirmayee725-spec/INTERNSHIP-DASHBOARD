@@ -126,6 +126,8 @@ textarea{resize:vertical;line-height:1.5}
 
   <!-- paste helper — shown only when auto-load is blocked -->
   <div id="paste-helper-msg" style="display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#9a3412;line-height:1.8"></div>
+  <!-- live load status bar -->
+  <div id="load-status" style="display:none;border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:13px;font-weight:500;transition:all .3s"></div>
 
   <div class="tabs">
     <div class="tab active" data-tab="submissions"   onclick="switchTab('submissions')">📋 Submissions</div>
@@ -154,7 +156,29 @@ textarea{resize:vertical;line-height:1.5}
         </div>
       </div>
       <div id="table-wrap" style="overflow-x:auto">
-        <div class="empty">No data loaded. Go to <strong>Connect Sheets</strong> tab.</div>
+        <div id="welcome-screen" style="padding:2rem 1.5rem;text-align:center">
+          <div style="font-size:32px;margin-bottom:12px">📋</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:6px">No submissions loaded yet</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:20px">Choose how to load your data:</div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+            <button class="btn success-btn" onclick="openPasteModal('reports')" style="font-size:14px;padding:10px 20px">
+              📋 Paste Weekly Reports CSV
+            </button>
+            <button class="btn gem" onclick="openPasteModal('ppt')" style="font-size:14px;padding:10px 20px">
+              🎯 Paste Presentations CSV
+            </button>
+          </div>
+          <div style="font-size:12px;color:var(--text3)">
+            Or use the 🔄 Refresh button (top-right) if hosted on GitHub Pages
+          </div>
+          <div style="margin-top:20px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;font-size:12px;color:#166534;text-align:left;max-width:500px;margin-left:auto;margin-right:auto">
+            <strong>How to get your CSV:</strong><br>
+            1. Open your Google Sheet<br>
+            2. File → Download → <strong>Comma Separated Values (.csv)</strong><br>
+            3. Open downloaded file in <strong>Notepad</strong> → Ctrl+A → Ctrl+C<br>
+            4. Click the button above and paste
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -176,16 +200,21 @@ textarea{resize:vertical;line-height:1.5}
 
       <!-- inline connect for PPT sheet -->
       <div id="ppt-connect-wrap" class="panel-body">
-        <div class="fg"><label>Presentations sheet — Published CSV URL</label>
-          <input type="url" id="ppt-csv-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"/></div>
-        <button class="btn primary" onclick="loadPptUrl()">Connect Presentations sheet ↗</button>
+        <div style="text-align:center;padding:1rem 0 1.5rem">
+          <div style="font-size:28px;margin-bottom:10px">🎯</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px">Load Presentations Data</div>
+          <button class="btn gem" onclick="openPasteModal('ppt')" style="font-size:14px;padding:10px 22px;margin-bottom:14px">
+            🎯 Paste Presentations CSV
+          </button>
+          <div style="font-size:12px;color:var(--text3)">Or use 🔄 Refresh if hosted on GitHub Pages</div>
+        </div>
         <div class="sep"></div>
-        <div class="fg"><label>Or paste CSV content directly</label>
-          <textarea id="ppt-csv-paste" rows="5" placeholder="Paste presentations sheet CSV here…"></textarea></div>
-        <button class="btn" onclick="loadPptPaste()">Load pasted CSV</button>
+        <div class="fg"><label>URL connection (GitHub Pages only)</label>
+          <input type="url" id="ppt-csv-url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"/></div>
+        <button class="btn primary" onclick="loadPptUrl()">Connect via URL ↗</button>
         <div class="sep"></div>
         <div class="info-box">
-          <strong>Expected Google Form columns for this sheet:</strong><br>
+          <strong>Expected Google Form columns:</strong><br>
           Timestamp · Your name · Roll no · Company name · Project title · Your presentation (file upload or Google Slides link)
         </div>
       </div>
@@ -294,6 +323,25 @@ textarea{resize:vertical;line-height:1.5}
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- PASTE CSV MODAL -->
+<div class="modal-overlay" id="paste-modal">
+  <div class="modal" style="max-width:640px">
+    <button class="modal-close" onclick="closePasteModal()">✕</button>
+    <h3 id="paste-modal-title">Paste CSV</h3>
+    <p id="paste-modal-sub" style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6"></p>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;font-size:12px;color:#1e40af;margin-bottom:12px;line-height:1.7">
+      <strong>How to get the CSV:</strong><br>
+      Open your Google Sheet → <strong>File → Download → Comma Separated Values (.csv)</strong><br>
+      Open the downloaded file in <strong>Notepad</strong> → <strong>Ctrl+A</strong> → <strong>Ctrl+C</strong> → paste below
+    </div>
+    <textarea id="paste-modal-input" rows="10" style="width:100%;font-family:monospace;font-size:12px;padding:10px;border:1px solid #d1d5db;border-radius:8px" placeholder="Paste CSV content here…"></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <button class="btn" onclick="closePasteModal()">Cancel</button>
+      <button class="btn primary" onclick="loadFromPasteModal()" style="padding:8px 20px">✅ Load data</button>
     </div>
   </div>
 </div>
@@ -946,55 +994,116 @@ function recomputeAll(){
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ─── CORS-SAFE FETCH ───
-// Tries direct fetch first (works on GitHub Pages / any web server).
-// If blocked (local file:// usage), tries three different CORS proxies in sequence.
-// If all fail, returns null so the caller can show the paste fallback.
 const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+  u => `https://thingproxy.freeboard.io/fetch/${u}`,
 ];
-async function safeFetch(url){
+function setStatus(msg, isError){
+  const el = document.getElementById('load-status');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+  el.style.background = isError ? '#fef2f2' : '#f0fdf4';
+  el.style.color = isError ? '#991b1b' : '#166534';
+  el.style.border = isError ? '1px solid #fca5a5' : '1px solid #86efac';
+}
+async function safeFetch(url, label){
   const bust = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
-  // 1. Try direct
+  // 1. Try direct (works on GitHub Pages)
   try {
+    setStatus('⏳ Loading ' + (label||'data') + '…');
     const r = await Promise.race([
-      fetch(bust),
-      new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+      fetch(bust, {cache:'no-store'}),
+      new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 6000))
     ]);
-    if(r.ok){ const t = await r.text(); if(t && t.includes(',')) return t; }
-  } catch(_){}
-  // 2. Try each proxy in order
-  for(const makeUrl of PROXIES){
+    if(r.ok){
+      const t = await r.text();
+      if(t && t.length > 10){ setStatus(''); return t; }
+    }
+  } catch(e){ console.warn('Direct fetch failed:', e.message); }
+  // 2. Try each proxy
+  for(let i=0;i<PROXIES.length;i++){
     try {
+      setStatus('⏳ Trying proxy ' + (i+1) + '/'+PROXIES.length+' for ' + (label||'data') + '…');
       const r = await Promise.race([
-        fetch(makeUrl(bust)),
-        new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 7000))
+        fetch(PROXIES[i](bust), {cache:'no-store'}),
+        new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 8000))
       ]);
-      if(r.ok){ const t = await r.text(); if(t && t.includes(',')) return t; }
-    } catch(_){ continue; }
+      if(r.ok){
+        const t = await r.text();
+        if(t && t.length > 10){ setStatus(''); return t; }
+      }
+    } catch(e){ console.warn('Proxy '+(i+1)+' failed:', e.message); }
   }
-  return null; // All failed — caller will show paste dialog
+  setStatus('');
+  return null;
 }
 
 // ─── REFRESH ───
 async function refreshAll(){
   const btn = document.getElementById('refresh-btn');
-  btn.textContent = '🔄 Refreshing…'; btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Loading…'; btn.disabled = true;
   let ok1 = false, ok2 = false;
   try {
-    const text = await safeFetch(REPORTS_CSV_URL);
+    const text = await safeFetch(REPORTS_CSV_URL, 'weekly reports');
     if(text){ parseReports(text, true); ok1 = true; }
-  } catch(e){}
+  } catch(e){ console.warn(e); }
   try {
-    const text = await safeFetch(PRESENTATIONS_CSV_URL);
+    const text = await safeFetch(PRESENTATIONS_CSV_URL, 'presentations');
     if(text){ parsePpt(text, true); ok2 = true; }
-  } catch(e){}
-  btn.textContent = '🔄 Refresh'; btn.disabled = false;
-  if(!ok1 || !ok2){
-    alert('Auto-refresh blocked (file:// CORS). To fix: use Connect Sheets tab and paste CSV directly, or host on GitHub Pages.');
+  } catch(e){ console.warn(e); }
+  btn.textContent = orig; btn.disabled = false;
+  setStatus('');
+  if(!ok1 && !ok2){
+    setStatus('❌ Could not load sheets automatically. Scroll down → use "Paste CSV" in the Connect Sheets tab.', true);
+  } else if(!ok1){
+    setStatus('⚠️ Presentations loaded. Weekly reports failed — paste CSV manually in Connect Sheets.', true);
+  } else if(!ok2){
+    setStatus('⚠️ Weekly reports loaded. Presentations failed — paste CSV manually in Connect Sheets.', true);
+  } else {
+    setStatus('✅ Both sheets loaded successfully!');
+    setTimeout(()=>setStatus(''), 3000);
   }
 }
+
+// ─── PASTE MODAL ───
+let pasteModalTarget = 'reports';
+function openPasteModal(target){
+  pasteModalTarget = target;
+  document.getElementById('paste-modal-title').textContent =
+    target === 'reports' ? '📋 Paste Weekly Reports CSV' : '🎯 Paste Presentations CSV';
+  document.getElementById('paste-modal-sub').innerHTML =
+    target === 'reports'
+      ? 'Paste the CSV from your <strong>Weekly Reports</strong> Google Sheet.'
+      : 'Paste the CSV from your <strong>Presentations</strong> Google Sheet.';
+  document.getElementById('paste-modal-input').value = '';
+  document.getElementById('paste-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('paste-modal-input').focus(), 100);
+}
+function closePasteModal(){
+  document.getElementById('paste-modal').classList.remove('open');
+}
+function loadFromPasteModal(){
+  const text = document.getElementById('paste-modal-input').value.trim();
+  if(!text){ alert('Please paste CSV content first.'); return; }
+  if(pasteModalTarget === 'reports'){
+    parseReports(text, false);
+    setStatus('✅ Weekly reports loaded from paste!');
+    setTimeout(()=>setStatus(''), 3000);
+  } else {
+    parsePpt(text, false);
+    setStatus('✅ Presentations loaded from paste!');
+    setTimeout(()=>setStatus(''), 3000);
+  }
+  closePasteModal();
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const pm = document.getElementById('paste-modal');
+  if(pm) pm.addEventListener('click', e=>{ if(e.target===pm) closePasteModal(); });
+});
 
 // ─── EMBEDDED SHEET URLS ───
 const REPORTS_CSV_URL      = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQEW7ei-oB7Y3AAe2DQuGP79XI4erlRcYbfyYnAFZ-Fhkzur19yVx2V0ax-THiJH9OxtJd0BH2Dg_m/pub?output=csv';
@@ -1011,11 +1120,11 @@ if(savedKey){ document.getElementById('gemini-key').value=savedKey; document.get
 (async function autoLoad(){
   let reportsOk = false, pptOk = false;
   try {
-    const text = await safeFetch(REPORTS_CSV_URL);
+    const text = await safeFetch(REPORTS_CSV_URL, 'weekly reports');
     if(text){ parseReports(text, true); reportsOk = true; }
   } catch(e){ console.warn('Reports auto-load error:', e); }
   try {
-    const text = await safeFetch(PRESENTATIONS_CSV_URL);
+    const text = await safeFetch(PRESENTATIONS_CSV_URL, 'presentations');
     if(text){ parsePpt(text, true); pptOk = true; }
   } catch(e){ console.warn('PPT auto-load error:', e); }
   try { showPasteHelper(reportsOk, pptOk); } catch(e){}
