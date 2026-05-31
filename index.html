@@ -585,15 +585,14 @@ function csvToObjects(text){
 function parseReports(text, isLive){
   const objects = csvToObjects(text);
   const rows = objects.map((row,i)=>{
-    const name = (row['Your name']||row['Your name ']||'').trim();
+  const name = (row['Name']||'').trim();
     if(!name) return null;
-    const week = (row['Week number']||row['Week number ']||'').trim();
-    const ts   = row['Timestamp']||'';
+      const week = (row['Week num']||'').trim();    const ts   = row['Timestamp']||'';
     return {
       id:i+1, student:name,
-      roll:(row['Roll no']||row['Roll no ']||'').trim(), week,
-      internshipUrl:(row['Your weekly internship report']||row['Your weekly internship report ']||'').trim(),
-      reflectionUrl:(row['Your weekly reflection report']||row['Your weekly reflection report ']||'').trim(),
+      roll:(row['Roll number']||'').trim(), week,
+      internshipUrl:(row['Weekly report']||'').trim(),      
+      reflectionUrl:(row['Reflection report submission']||'').trim(),
       ts, timeliness:computeTimeliness(ts, name, week),
       aiStatus:'pending', aiResult:null, aiError:null
     };
@@ -993,13 +992,6 @@ function recomputeAll(){
 // ─── helpers ───
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ─── CORS-SAFE FETCH ───
-const PROXIES = [
-  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-  u => `https://thingproxy.freeboard.io/fetch/${u}`,
-];
 function setStatus(msg, isError){
   const el = document.getElementById('load-status');
   if(!el) return;
